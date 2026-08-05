@@ -174,21 +174,6 @@ class UNet(nn.Module):
         for level in range(num_resolutions):
             out_channels = base_channels * base_channels_multiples[level]
             for _ in range(num_res_blocks):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 block_h1 = ResnetBlock(
                     in_channels=in_channels,
                     out_channels=out_channels,
@@ -256,9 +241,6 @@ class UNet(nn.Module):
                 ),
             )
         )
-
-
-
         self.cross_attention_bottleneck = CrossAttention(embed_dim=in_channels)
 
 
@@ -305,70 +287,33 @@ class UNet(nn.Module):
             nn.Conv2d(in_channels=in_channels, out_channels=output_channels, kernel_size=3, stride=1, padding="same"),
         )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def forward(self, h1, h2, t):
         time_emb = self.time_embeddings(t)
-
-
-
-
         h1 = self.first_h1(h1)
         h2 = self.first_h2(h2)
 
         outs_h1 = [h1]
         outs_h2 = [h2]
         cross_attention_index = 0
-
-
-
         for i, (block_h1, block_h2) in enumerate(zip(self.encoder_blocks_h1, self.encoder_blocks_h2)):
 
             if isinstance(block_h1, ResnetBlock) and isinstance(block_h2, ResnetBlock):
                 h1 = block_h1(h1, time_emb)
                 h2 = block_h2(h2, time_emb)
-
-
                 h2 = self.cross_attention_layers_enc[cross_attention_index](h1, h2)
                 cross_attention_index += 1
             else:
 
                 h1 = block_h1(h1)
                 h2 = block_h2(h2)
-
-
             outs_h1.append(h1)
             outs_h2.append(h2)
-
-
 
         for layer1, layer2 in zip(self.bottleneck_blocks_h1, self.bottleneck_blocks_h2):
             h1 = layer1(h1, time_emb)
             h2 = layer2(h2, time_emb)
-
-
             h2 = self.cross_attention_bottleneck(h1, h2)
-
-
-        cross_attention_index = 0
+            cross_attention_index = 0
 
         for i, (block_h1, block_h2) in enumerate(zip(self.decoder_blocks_h1, self.decoder_blocks_h2)):
             if isinstance(block_h1, ResnetBlock):
