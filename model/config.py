@@ -1,23 +1,14 @@
-
-
 from dataclasses import dataclass
-
 import torch
-
 
 def get_default_device() -> str:
     return "cuda" if torch.cuda.is_available() else "cpu"
-
-
 @dataclass
 class BaseConfig:
     DEVICE: str = get_default_device()
     max_norm: float = 1.0
-
-
 @dataclass
 class TrainingConfig:
-
 
     TIMESTEPS: int = 1000
     IMG_SHAPE: tuple[int, int, int] = (2, 16, 32)
@@ -26,7 +17,6 @@ class TrainingConfig:
     LR: float = 1e-4
     NUM_WORKERS: int = 0
     Print_step: int = 10
-
 
 @dataclass
 class ModelConfig:
