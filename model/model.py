@@ -5,20 +5,15 @@ import torch
 import torch.nn as nn
 
 
-
-
 class SinusoidalPositionEmbeddings(nn.Module):
     def __init__(self, total_time_steps=1000, time_emb_dims=128, time_emb_dims_exp=512):
         super().__init__()
-
         half_dim = time_emb_dims // 2
         emb = math.log(10000) / (half_dim - 1)
         emb = torch.exp(torch.arange(half_dim, dtype=torch.float32) * -emb)
-
         ts = torch.arange(total_time_steps, dtype=torch.float32)
         emb = torch.unsqueeze(ts, dim=-1) * torch.unsqueeze(emb, dim=0)
         emb = torch.cat((emb.sin(), emb.cos()), dim=-1)
-
         self.time_blocks = nn.Sequential(
             nn.Embedding.from_pretrained(emb),
             nn.Linear(in_features=time_emb_dims, out_features=time_emb_dims_exp),
@@ -28,7 +23,6 @@ class SinusoidalPositionEmbeddings(nn.Module):
 
     def forward(self, time):
         return self.time_blocks(time)
-
 
 class AttentionBlock(nn.Module):
     def __init__(self, channels=64):
@@ -52,16 +46,10 @@ class ResnetBlock(nn.Module):
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
-
         self.act_fn = nn.SiLU()
-
         self.normlize_1 = nn.GroupNorm(num_groups=8, num_channels=self.in_channels)
         self.conv_1 = nn.Conv2d(in_channels=self.in_channels, out_channels=self.out_channels, kernel_size=3, stride=1, padding="same")
-
-
         self.dense_1 = nn.Linear(in_features=time_emb_dims, out_features=self.out_channels)
-
-
         self.normlize_2 = nn.GroupNorm(num_groups=8, num_channels=self.out_channels)
         self.dropout = nn.Dropout2d(p=dropout_rate)
         self.conv_2 = nn.Conv2d(in_channels=self.out_channels, out_channels=self.out_channels, kernel_size=3, stride=1, padding="same")
@@ -80,17 +68,10 @@ class ResnetBlock(nn.Module):
 
         h = self.act_fn(self.normlize_1(x))
         h = self.conv_1(h)
-
-
-
         h += self.dense_1(self.act_fn(t))[:, :, None, None]
-
-
         h = self.act_fn(self.normlize_2(h))
         h = self.dropout(h)
         h = self.conv_2(h)
-
-
         h = h + self.match_input(x)
         h = self.attention(h)
         return h
@@ -126,17 +107,10 @@ class CrossAttention(nn.Module):
         B, C, H, W = h1.shape
         h1 = h1.view(B, C, H * W).permute(0, 2, 1)
         h2 = h2.view(B, C, H * W).permute(0, 2, 1)
-
-
         attn_output, _ = self.multihead_attn(h1, h2, h2)
-
-
         h2_out = self.norm(h1 + self.dropout(attn_output))
-
-
         h2_out = h2_out.permute(0, 2, 1).view(B, C, H, W)
         return h2_out
-
 
 
 class UNet(nn.Module):
@@ -155,16 +129,9 @@ class UNet(nn.Module):
 
         time_emb_dims_exp = base_channels * time_multiple
         self.time_embeddings = SinusoidalPositionEmbeddings(time_emb_dims=base_channels, time_emb_dims_exp=time_emb_dims_exp)
-
-
-
         self.first_h1 = nn.Conv2d(in_channels=input_channels, out_channels=base_channels, kernel_size=3, stride=1, padding="same")
         self.first_h2 = nn.Conv2d(in_channels=input_channels, out_channels=base_channels, kernel_size=3, stride=1, padding="same")
-
         num_resolutions = len(base_channels_multiples)
-
-
-
         self.encoder_blocks_h1 = nn.ModuleList()
         self.encoder_blocks_h2 = nn.ModuleList()
         self.cross_attention_layers_enc = nn.ModuleList()
@@ -279,12 +246,10 @@ class UNet(nn.Module):
             if level != 0:
                 self.decoder_blocks_h1.append(UpSample(in_channels))
                 self.decoder_blocks_h2.append(UpSample(in_channels))
-
-
-        self.final = nn.Sequential(
-            nn.GroupNorm(num_groups=8, num_channels=in_channels),
-            nn.SiLU(),
-            nn.Conv2d(in_channels=in_channels, out_channels=output_channels, kernel_size=3, stride=1, padding="same"),
+                self.final = nn.Sequential(
+                nn.GroupNorm(num_groups=8, num_channels=in_channels),
+                nn.SiLU(),
+                nn.Conv2d(in_channels=in_channels, out_channels=output_channels, kernel_size=3, stride=1, padding="same"),
         )
 
     def forward(self, h1, h2, t):
