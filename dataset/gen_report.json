@@ -1,0 +1,35 @@
+{
+  "route": {
+    "line_x": 260.423,
+    "line_y": [
+      297.171,
+      847.171
+    ],
+    "height": 20.0,
+    "auav_axis": "x",
+    "auav_offset": 0.2,
+    "auav_geometry": "strict side-by-side parallel (perpendicular x-offset, same y)"
+  },
+  "total": 12000,
+  "train_n": 10800,
+  "test_n": 1200,
+  "split": "random",
+  "seed": 2026,
+  "scattering": true,
+  "norm": {
+    "g_min": -5.417778083938174e-05,
+    "g_max": 5.376892295316793e-05
+  },
+  "deviating_node_offsets_source": "reused from dataset_o128_uav_apeg_oversample_50000",
+  "deviating_node_distances_m": [
+    0.8797477186989254,
+    0.9266055902655576,
+    0.30688328056062214,
+    0.872433207753094,
+    0.3579296476621431
+  ],
+  "uav_auav_paired_cos_mean": 0.8577097058296204,
+  "auav_to_any_uav_nn_cos_mean": 0.9827913045883179,
+  "auav_to_any_uav_nn_cos_gt099_frac": 0.52375,
+  "deviating_node_vs_test_uav_aligned_cos_mean": 0.8261458277702332
+}
